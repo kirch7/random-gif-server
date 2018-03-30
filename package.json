@@ -3,7 +3,9 @@
   "version": "0.0.1",
   "description": "",
   "main": "index.js",
-  "dependencies": {},
+  "dependencies": {
+    "mime": "^2.2.0"
+  },
   "devDependencies": {},
   "scripts": {
     "test": "echo \"No test\""

@@ -1,7 +1,11 @@
 const http = require('http');
 const fs = require('fs');
+const mime = require('mime');
+const path = require('path');
 
-const imagesFolder = "."
+const imagesFolder = ".";
+
+const logPath = "./log.log";
 
 getRandomImagePath = () => {
     const files = fs.readdirSync(imagesFolder);
@@ -14,16 +18,33 @@ getRandomImagePath = () => {
 
     const chosenID = (Math.random() * images.length) | 0;
     
-    return images[chosenID];    
+    return imagesFolder + '/' + images[chosenID];
 }
 
 http.createServer((request, response) => {
-    let chosen = getRandomImagePath();
-    response.writeHead(200, {'Content-Type': 'text/html'});
+    var host = request.headers['host'];
+    var url = request.url;
+    var ip = request.connection.remoteAddress
 
-    if (chosen)
-	response.write(`<image src='${chosen}'/>`);
+    var log = `${ip} requests ${host} ${url}. `;
+    
+    let chosen = getRandomImagePath();
+    if (chosen) {
+	let extension = path.extname(chosen);
+    
+	let img = fs.readFileSync(chosen);
+	response.writeHead(200, {
+	    'Content-Type': mime.getType(extension)
+	});
+	response.write(img, 'binary');
+	log += `Responding ${chosen}`;
+    }
     response.end();
+    log += '\n';
+    fs.appendFile(logPath, log, err => {
+	if (err)
+	    console.error(err);
+    });
 })
-    .listen(7777);
+    .listen(80);
 
